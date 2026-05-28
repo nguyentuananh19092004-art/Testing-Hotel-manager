@@ -14,16 +14,18 @@ import model.Order;
 import model.Room;
 import model.User;
 
-@WebServlet(name = "CustomerServlet", urlPatterns = {"/customer"})
+//
+//12345
+@WebServlet(name = "CustomerServlet", urlPatterns = { "/customer" })
 public class CustomerServlet extends HttpServlet {
 
     @Override
     protected void doGet(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
-        
+
         HttpSession session = request.getSession();
         User user = (User) session.getAttribute("currentUser");
-        
+
         if (user == null || !user.getRole().equals("customer")) {
             response.sendRedirect("login.jsp");
             return;
@@ -45,22 +47,22 @@ public class CustomerServlet extends HttpServlet {
     @Override
     protected void doPost(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
-            
+
         HttpSession session = request.getSession();
         User user = (User) session.getAttribute("currentUser");
-        
+
         String action = request.getParameter("action");
         if ("book".equals(action)) {
             String roomId = request.getParameter("roomId");
             int price = Integer.parseInt(request.getParameter("price"));
-            
+
             RoomDAO roomDAO = new RoomDAO();
             OrderDAO orderDAO = new OrderDAO();
-            
+
             roomDAO.updateRoomStatus(roomId, "Reserved");
             orderDAO.insertOrder(roomId, user.getUsername(), price, "Chờ Check-in");
         }
-        
+
         response.sendRedirect("customer");
     }
 }

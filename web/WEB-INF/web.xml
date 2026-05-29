@@ -1,0 +1,78 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<web-app metadata-complete="false" version="5.0" xmlns="https://jakarta.ee/xml/ns/jakartaee" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="https://jakarta.ee/xml/ns/jakartaee https://jakarta.ee/xml/ns/jakartaee/web-app_5_0.xsd">
+    <display-name>Hotel Management System</display-name>
+    <!-- Khai báo các Servlet -->
+    <servlet>
+        <servlet-name>HomeServlet</servlet-name>
+        <servlet-class>controller.HomeServlet</servlet-class>
+    </servlet>
+    <servlet>
+        <servlet-name>LoginServlet</servlet-name>
+        <servlet-class>controller.LoginServlet</servlet-class>
+    </servlet>
+    <servlet>
+        <servlet-name>LogoutServlet</servlet-name>
+        <servlet-class>controller.LogoutServlet</servlet-class>
+    </servlet>
+    <servlet>
+        <servlet-name>RegisterServlet</servlet-name>
+        <servlet-class>controller.RegisterServlet</servlet-class>
+    </servlet>
+    <servlet>
+        <servlet-name>CustomerServlet</servlet-name>
+        <servlet-class>controller.CustomerServlet</servlet-class>
+    </servlet>
+    <servlet>
+        <servlet-name>HousekeeperServlet</servlet-name>
+        <servlet-class>controller.HousekeeperServlet</servlet-class>
+    </servlet>
+    <servlet>
+        <servlet-name>ManagerServlet</servlet-name>
+        <servlet-class>controller.ManagerServlet</servlet-class>
+    </servlet>
+    <servlet>
+        <servlet-name>ReceptionistServlet</servlet-name>
+        <servlet-class>controller.ReceptionistServlet</servlet-class>
+    </servlet>
+    <!-- Mapping URL cho các Servlet -->
+    <servlet-mapping>
+        <servlet-name>HomeServlet</servlet-name>
+        <url-pattern>/home</url-pattern>
+    </servlet-mapping>
+    <servlet-mapping>
+        <servlet-name>LoginServlet</servlet-name>
+        <url-pattern>/login</url-pattern>
+    </servlet-mapping>
+    <servlet-mapping>
+        <servlet-name>LogoutServlet</servlet-name>
+        <url-pattern>/logout</url-pattern>
+    </servlet-mapping>
+    <servlet-mapping>
+        <servlet-name>RegisterServlet</servlet-name>
+        <url-pattern>/register</url-pattern>
+    </servlet-mapping>
+    <servlet-mapping>
+        <servlet-name>CustomerServlet</servlet-name>
+        <url-pattern>/customer</url-pattern>
+    </servlet-mapping>
+    <servlet-mapping>
+        <servlet-name>HousekeeperServlet</servlet-name>
+        <url-pattern>/housekeeper</url-pattern>
+    </servlet-mapping>
+    <servlet-mapping>
+        <servlet-name>ManagerServlet</servlet-name>
+        <url-pattern>/manager</url-pattern>
+    </servlet-mapping>
+    <servlet-mapping>
+        <servlet-name>ReceptionistServlet</servlet-name>
+        <url-pattern>/receptionist</url-pattern>
+    </servlet-mapping>
+    <!-- Cấu hình trang mặc định khi truy cập vào thư mục gốc của web -->
+    <welcome-file-list>
+        <welcome-file>index.jsp</welcome-file>
+    </welcome-file-list>
+    <!-- Thiết lập thời gian sống của Session (30 phút) -->
+    <session-config>
+        <session-timeout>30</session-timeout>
+    </session-config>
+</web-app>

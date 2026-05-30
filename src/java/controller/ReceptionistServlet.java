@@ -55,6 +55,31 @@ public class ReceptionistServlet extends HttpServlet {
         } else if ("checkout".equals(action)) {
             orderDAO.updateOrderStatus(orderId, "Đã Check-out");
             roomDAO.updateRoomStatus(roomId, "Needs Cleaning");
+            
+            // Tự động giao việc dọn phòng
+            try {
+                int floor = Integer.parseInt(roomId.substring(0, 1));
+                java.sql.Date today = new java.sql.Date(System.currentTimeMillis());
+                java.time.LocalTime now = java.time.LocalTime.now();
+                int shiftId = 1; // Default
+                if (now.isAfter(java.time.LocalTime.of(15, 0)) && now.isBefore(java.time.LocalTime.of(21, 0))) shiftId = 2;
+                else if (now.isAfter(java.time.LocalTime.of(21, 0)) || now.isBefore(java.time.LocalTime.of(7, 0))) shiftId = 3;
+                
+                dal.ShiftAssignmentDAO saDAO = new dal.ShiftAssignmentDAO();
+                java.util.List<model.ShiftAssignment> onDuty = saDAO.getHousekeepersOnDuty(floor, shiftId, today);
+                
+                dal.CleaningTaskDAO ctDAO = new dal.CleaningTaskDAO();
+                model.CleaningTask task = new model.CleaningTask();
+                task.setRoomId(roomId);
+                if (!onDuty.isEmpty()) {
+                    task.setAssignedTo(onDuty.get(0).getUsername()); // Giao cho người đầu tiên
+                }
+                ctDAO.addCleaningTask(task);
+                
+                request.getSession().setAttribute("message", "Khách đã check-out và đã gửi thông báo dọn phòng cho tầng " + floor);
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
         }
         
         response.sendRedirect("receptionist");

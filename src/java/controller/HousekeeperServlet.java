@@ -8,7 +8,10 @@ import jakarta.servlet.http.HttpServlet;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import jakarta.servlet.http.HttpSession;
+import java.util.List;
 import model.User;
+import dal.CleaningTaskDAO;
+import model.CleaningTask;
 
 @WebServlet(name = "HousekeeperServlet", urlPatterns = {"/housekeeper"})
 public class HousekeeperServlet extends HttpServlet {
@@ -26,7 +29,11 @@ public class HousekeeperServlet extends HttpServlet {
         }
 
         RoomDAO roomDAO = new RoomDAO();
+        CleaningTaskDAO ctDAO = new CleaningTaskDAO();
+        
         request.setAttribute("rooms", roomDAO.getAllRooms());
+        List<CleaningTask> tasks = ctDAO.getTasksByHousekeeper(user.getUsername());
+        request.setAttribute("tasks", tasks);
 
         request.getRequestDispatcher("pages/housekeeper.jsp").forward(request, response);
     }
@@ -38,8 +45,15 @@ public class HousekeeperServlet extends HttpServlet {
         String action = request.getParameter("action");
         if ("clean".equals(action)) {
             String roomId = request.getParameter("roomId");
+            String taskIdStr = request.getParameter("taskId");
+            
             RoomDAO roomDAO = new RoomDAO();
             roomDAO.updateRoomStatus(roomId, "Available");
+            
+            if (taskIdStr != null && !taskIdStr.isEmpty()) {
+                CleaningTaskDAO ctDAO = new CleaningTaskDAO();
+                ctDAO.updateTaskStatus(Integer.parseInt(taskIdStr), "Completed");
+            }
         }
         
         response.sendRedirect("housekeeper");

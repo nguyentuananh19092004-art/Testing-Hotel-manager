@@ -30,7 +30,9 @@ CREATE TABLE Users (
     username VARCHAR(50) PRIMARY KEY,
     password VARCHAR(50) NOT NULL,
     role VARCHAR(20) NOT NULL, -- Các quyền: customer, receptionist, housekeeper, manager
-    name NVARCHAR(100) NOT NULL
+    name NVARCHAR(100) NOT NULL,
+    phone VARCHAR(15),
+    gmail VARCHAR(100)
 );
 GO
 
@@ -95,17 +97,85 @@ CREATE TABLE Payment (
 );
 GO
 
+-- Bảng Ca làm việc (Shift)
+CREATE TABLE Shift (
+    id INT PRIMARY KEY,
+    name NVARCHAR(50) NOT NULL,
+    start_time TIME NOT NULL,
+    end_time TIME NOT NULL
+);
+GO
+
+-- Bảng Phân ca (ShiftAssignment)
+CREATE TABLE ShiftAssignment (
+    id INT IDENTITY(1,1) PRIMARY KEY,
+    username VARCHAR(50) FOREIGN KEY REFERENCES Users(username) ON DELETE CASCADE,
+    shift_id INT FOREIGN KEY REFERENCES Shift(id) ON DELETE CASCADE,
+    floor INT NOT NULL,
+    assign_date DATE NOT NULL
+);
+GO
+
+-- Bảng Nhiệm vụ dọn phòng (CleaningTask)
+CREATE TABLE CleaningTask (
+    id INT IDENTITY(1,1) PRIMARY KEY,
+    room_id VARCHAR(10) FOREIGN KEY REFERENCES Room(id) ON DELETE CASCADE,
+    assigned_to VARCHAR(50) FOREIGN KEY REFERENCES Users(username) ON DELETE SET NULL,
+    status VARCHAR(20) DEFAULT 'Pending', -- Pending, In Progress, Completed
+    created_at DATETIME DEFAULT GETDATE(),
+    completed_at DATETIME
+);
+GO
+
 -- =======================================================
 -- CHÈN DỮ LIỆU MẪU (MOCK DATA CƠ BẢN & MỞ RỘNG)
 -- =======================================================
 
 -- 1. Thêm nhân sự & Khách hàng (Đã được giữ nguyên từ file cũ)
-INSERT INTO Users (username, password, role, name) VALUES 
-('khachhang', '123', 'customer', N'Nguyễn Khách Hàng (VIP)'),
-('khachhang2', '123', 'customer', N'Trần Văn A (Khách thường)'),
-('letan', '123', 'receptionist', N'Trần Lễ Tân'),
-('donphong', '123', 'housekeeper', N'Lê Dọn Phòng'),
-('quanly', '123', 'manager', N'Phạm Quản Lý');
+INSERT INTO Users (username, password, role, name, phone, gmail) VALUES 
+('khachhang', '123', 'customer', N'Nguyễn Khách Hàng (VIP)', '0123456789', 'kh1@gmail.com'),
+('khachhang2', '123', 'customer', N'Trần Văn A (Khách thường)', '0123456788', 'kh2@gmail.com'),
+('letan', '123', 'receptionist', N'Trần Lễ Tân', '0987654321', 'lt@gmail.com'),
+('donphong', '123', 'housekeeper', N'Lê Dọn Phòng', '0987654322', 'dp@gmail.com'),
+('quanly', '123', 'manager', N'Phạm Quản Lý', '0909090909', 'admin@gmail.com');
+
+-- 5 Lễ tân thêm
+INSERT INTO Users (username, password, role, name, phone, gmail) VALUES 
+('lt1', '123', 'receptionist', N'Lễ Tân 1', '0911111111', 'lt1@gmail.com'),
+('lt2', '123', 'receptionist', N'Lễ Tân 2', '0911111112', 'lt2@gmail.com'),
+('lt3', '123', 'receptionist', N'Lễ Tân 3', '0911111113', 'lt3@gmail.com'),
+('lt4', '123', 'receptionist', N'Lễ Tân 4', '0911111114', 'lt4@gmail.com'),
+('lt5', '123', 'receptionist', N'Lễ Tân 5', '0911111115', 'lt5@gmail.com');
+
+-- 20 Dọn phòng thêm
+INSERT INTO Users (username, password, role, name, phone, gmail) VALUES 
+('dp1', '123', 'housekeeper', N'Dọn Phòng 1', '0922222201', 'dp1@gmail.com'),
+('dp2', '123', 'housekeeper', N'Dọn Phòng 2', '0922222202', 'dp2@gmail.com'),
+('dp3', '123', 'housekeeper', N'Dọn Phòng 3', '0922222203', 'dp3@gmail.com'),
+('dp4', '123', 'housekeeper', N'Dọn Phòng 4', '0922222204', 'dp4@gmail.com'),
+('dp5', '123', 'housekeeper', N'Dọn Phòng 5', '0922222205', 'dp5@gmail.com'),
+('dp6', '123', 'housekeeper', N'Dọn Phòng 6', '0922222206', 'dp6@gmail.com'),
+('dp7', '123', 'housekeeper', N'Dọn Phòng 7', '0922222207', 'dp7@gmail.com'),
+('dp8', '123', 'housekeeper', N'Dọn Phòng 8', '0922222208', 'dp8@gmail.com'),
+('dp9', '123', 'housekeeper', N'Dọn Phòng 9', '0922222209', 'dp9@gmail.com'),
+('dp10', '123', 'housekeeper', N'Dọn Phòng 10', '0922222210', 'dp10@gmail.com'),
+('dp11', '123', 'housekeeper', N'Dọn Phòng 11', '0922222211', 'dp11@gmail.com'),
+('dp12', '123', 'housekeeper', N'Dọn Phòng 12', '0922222212', 'dp12@gmail.com'),
+('dp13', '123', 'housekeeper', N'Dọn Phòng 13', '0922222213', 'dp13@gmail.com'),
+('dp14', '123', 'housekeeper', N'Dọn Phòng 14', '0922222214', 'dp14@gmail.com'),
+('dp15', '123', 'housekeeper', N'Dọn Phòng 15', '0922222215', 'dp15@gmail.com'),
+('dp16', '123', 'housekeeper', N'Dọn Phòng 16', '0922222216', 'dp16@gmail.com'),
+('dp17', '123', 'housekeeper', N'Dọn Phòng 17', '0922222217', 'dp17@gmail.com'),
+('dp18', '123', 'housekeeper', N'Dọn Phòng 18', '0922222218', 'dp18@gmail.com'),
+('dp19', '123', 'housekeeper', N'Dọn Phòng 19', '0922222219', 'dp19@gmail.com'),
+('dp20', '123', 'housekeeper', N'Dọn Phòng 20', '0922222220', 'dp20@gmail.com');
+GO
+
+-- Insert 3 Ca làm việc
+INSERT INTO Shift (id, name, start_time, end_time) VALUES
+(1, N'Ca Sáng', '07:00:00', '14:59:59'),
+(2, N'Ca Chiều', '15:00:00', '20:59:59'),
+(3, N'Ca Đêm', '21:00:00', '06:59:59');
 GO
 
 -- 2. Insert 3 Hạng Phòng

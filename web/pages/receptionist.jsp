@@ -11,6 +11,12 @@
     <jsp:include page="../components/dashboard_header.jsp" />
 
     <div class="container animate-fade-in-up">
+        <c:if test="${not empty sessionScope.message}">
+            <div style="background-color: #d1fae5; color: #065f46; padding: 1rem; border-radius: 0.5rem; margin-bottom: 1rem;">
+                ${sessionScope.message}
+            </div>
+            <c:remove var="message" scope="session" />
+        </c:if>
         <h2>Quản lý Đặt phòng & Check-in / Check-out</h2>
         <div class="card glass-panel" style="overflow-x: auto;">
             <table class="table">
@@ -114,22 +120,32 @@
                 const orders = DB.getOrders();
                 const orderIndex = orders.findIndex(o => o.id === orderId);
                 const roomId = orders[orderIndex].roomId;
-                const total = orders[orderIndex].total;
-
-                const rooms = DB.getRooms();
-                const roomIndex = rooms.findIndex(r => r.id === roomId);
-
-                // Cập nhật trạng thái
-                orders[orderIndex].status = 'Đã Check-out';
-                // Đổi trạng thái phòng thành Cần dọn dẹp
-                rooms[roomIndex].status = 'Needs Cleaning';
-
-                DB.setOrders(orders);
-                DB.setRooms(rooms);
                 
-                alert(`Check-out thành công. Đã xuất hóa đơn ${total.toLocaleString('vi-VN')} đ. Báo dọn phòng!`);
-                renderOrders();
-                renderRooms();
+                // Submit to backend to trigger notification
+                const form = document.createElement('form');
+                form.method = 'POST';
+                form.action = '${pageContext.request.contextPath}/receptionist';
+                
+                const actionInput = document.createElement('input');
+                actionInput.type = 'hidden';
+                actionInput.name = 'action';
+                actionInput.value = 'checkout';
+                form.appendChild(actionInput);
+                
+                const orderIdInput = document.createElement('input');
+                orderIdInput.type = 'hidden';
+                orderIdInput.name = 'orderId';
+                orderIdInput.value = orderId;
+                form.appendChild(orderIdInput);
+                
+                const roomIdInput = document.createElement('input');
+                roomIdInput.type = 'hidden';
+                roomIdInput.name = 'roomId';
+                roomIdInput.value = roomId;
+                form.appendChild(roomIdInput);
+                
+                document.body.appendChild(form);
+                form.submit();
             }
         }
 

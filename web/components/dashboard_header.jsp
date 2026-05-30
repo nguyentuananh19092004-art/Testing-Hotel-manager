@@ -10,7 +10,11 @@
     <div style="display: flex; gap: 1rem; align-items: center;">
         <a href="${pageContext.request.contextPath}/home" class="btn btn-primary" style="background: rgba(255,255,255,0.1); border: 1px solid var(--border); color: var(--text-main);">Trang chủ</a>
         <% if (currentUser != null) { %>
-            <div style="display: flex; align-items: center; gap: 1rem;">
+            <% if ("manager".equals(currentUser.getRole())) { %>
+                <a href="${pageContext.request.contextPath}/admin/employees" class="btn btn-primary" style="background: rgba(255,255,255,0.1); border: 1px solid var(--border); color: var(--text-main);">QL Nhân Viên</a>
+                <a href="${pageContext.request.contextPath}/admin/shifts" class="btn btn-primary" style="background: rgba(255,255,255,0.1); border: 1px solid var(--border); color: var(--text-main);">Phân Ca</a>
+            <% } %>
+            <div style="display: flex; align-items: center; gap: 1rem; margin-left: 1rem;">
                 <span style="color: var(--text-main);">Xin chào, <strong><%= currentUser.getName() %></strong></span>
                 <a href="${pageContext.request.contextPath}/logout" class="btn btn-danger" style="padding: 0.5rem 1rem; text-decoration: none;">Đăng xuất</a>
             </div>

@@ -1,5 +1,6 @@
 -- =======================================================
 -- Kịch bản khởi tạo CSDL Hệ thống Quản lý Khách sạn
+-- Cập nhật: Tích hợp thiết kế 6 tầng x 9 phòng, Hạng phòng, và Thanh toán bồi thường
 -- =======================================================
 
 USE master;
@@ -33,23 +34,64 @@ CREATE TABLE Users (
 );
 GO
 
--- Bảng Rooms (Thông tin các phòng)
-CREATE TABLE Rooms (
-    id VARCHAR(10) PRIMARY KEY,
-    type NVARCHAR(50) NOT NULL,
-    status VARCHAR(20) NOT NULL DEFAULT 'Available', -- Available, Occupied, Needs Cleaning, Reserved
+-- Bảng Hạng Phòng (RoomCategory)
+CREATE TABLE RoomCategory (
+    id INT IDENTITY(1,1) PRIMARY KEY,
+    name NVARCHAR(50) NOT NULL,
     price INT NOT NULL,
-    features NVARCHAR(255)
+    capacity INT,
+    description NVARCHAR(255)
 );
 GO
 
--- Bảng Orders (Thông tin đặt phòng / Hóa đơn)
+-- Bảng Phòng (Room)
+CREATE TABLE Room (
+    id VARCHAR(10) PRIMARY KEY,
+    category_id INT FOREIGN KEY REFERENCES RoomCategory(id) ON DELETE CASCADE,
+    floor INT,
+    status VARCHAR(20) DEFAULT 'Available'
+);
+GO
+
+-- Bảng Đặt phòng (Orders)
 CREATE TABLE Orders (
     id INT IDENTITY(1,1) PRIMARY KEY,
-    roomId VARCHAR(10) FOREIGN KEY REFERENCES Rooms(id) ON DELETE CASCADE,
-    customerUsername VARCHAR(50) FOREIGN KEY REFERENCES Users(username) ON DELETE CASCADE,
-    total INT NOT NULL,
-    status NVARCHAR(50) NOT NULL DEFAULT N'Chờ Check-in' -- Chờ Check-in, Đang ở, Đã Check-out
+    room_id VARCHAR(10) FOREIGN KEY REFERENCES Room(id) ON DELETE CASCADE,
+    customer_username VARCHAR(50) FOREIGN KEY REFERENCES Users(username) ON DELETE CASCADE,
+    total INT,
+    check_in_date DATE,
+    check_out_date DATE,
+    status NVARCHAR(50), -- Chờ Check-in, Đang ở, Đã Check-out
+    payment_status VARCHAR(20) DEFAULT 'Unpaid'
+);
+GO
+
+-- Bảng Danh mục Đồ đạc (RoomItem)
+CREATE TABLE RoomItem (
+    id INT IDENTITY(1,1) PRIMARY KEY,
+    name NVARCHAR(100) NOT NULL,
+    compensation_price INT NOT NULL
+);
+GO
+
+-- Bảng Phụ phí làm hỏng đồ (OrderDamage)
+CREATE TABLE OrderDamage (
+    id INT IDENTITY(1,1) PRIMARY KEY,
+    order_id INT FOREIGN KEY REFERENCES Orders(id) ON DELETE CASCADE,
+    item_id INT FOREIGN KEY REFERENCES RoomItem(id) ON DELETE CASCADE,
+    quantity INT NOT NULL,
+    total_cost INT NOT NULL
+);
+GO
+
+-- Bảng Thanh toán (Payment)
+CREATE TABLE Payment (
+    id INT IDENTITY(1,1) PRIMARY KEY,
+    order_id INT FOREIGN KEY REFERENCES Orders(id) ON DELETE CASCADE,
+    payment_method VARCHAR(50),
+    amount INT NOT NULL,
+    payment_date DATETIME DEFAULT GETDATE(),
+    receptionist_username VARCHAR(50) FOREIGN KEY REFERENCES Users(username)
 );
 GO
 
@@ -57,7 +99,7 @@ GO
 -- CHÈN DỮ LIỆU MẪU (MOCK DATA CƠ BẢN & MỞ RỘNG)
 -- =======================================================
 
--- 1. Thêm nhân sự & Khách hàng
+-- 1. Thêm nhân sự & Khách hàng (Đã được giữ nguyên từ file cũ)
 INSERT INTO Users (username, password, role, name) VALUES 
 ('khachhang', '123', 'customer', N'Nguyễn Khách Hàng (VIP)'),
 ('khachhang2', '123', 'customer', N'Trần Văn A (Khách thường)'),
@@ -66,36 +108,52 @@ INSERT INTO Users (username, password, role, name) VALUES
 ('quanly', '123', 'manager', N'Phạm Quản Lý');
 GO
 
--- 2. Thêm danh mục Phòng đa dạng (từ rẻ đến cao cấp)
-INSERT INTO Rooms (id, type, status, price, features) VALUES 
-('101', 'Standard', 'Available', 500000, N'1 Giường đơn, Wi-Fi, Quạt'),
-('102', 'Standard', 'Available', 500000, N'1 Giường đơn, Wi-Fi, Quạt'),
-('103', 'Standard', 'Occupied', 500000, N'1 Giường đơn, Wi-Fi, Quạt'),
-('201', 'Deluxe', 'Needs Cleaning', 800000, N'2 Giường đơn, Điều hòa, Ban công, Tivi'),
-('202', 'Deluxe', 'Available', 800000, N'2 Giường đơn, Điều hòa, Ban công, Tivi'),
-('203', 'Deluxe', 'Reserved', 800000, N'1 Giường King, Điều hòa, Ban công view biển'),
-('301', 'Suite', 'Available', 1500000, N'Giường King lớn, Bồn tắm massage, Minibar, VIP'),
-('302', 'Suite', 'Needs Cleaning', 1500000, N'Giường King lớn, Bồn tắm massage, Minibar, VIP');
+-- 2. Insert 3 Hạng Phòng
+INSERT INTO RoomCategory (name, price, capacity, description) VALUES
+('Standard', 500000, 2, 'Basic amenities, 1 Double Bed'),
+('Deluxe', 1000000, 3, 'Ocean view, 1 King Bed or 2 Twin Beds'),
+('Suite', 2500000, 4, 'Premium luxury, Living room, 2 Bedrooms');
 GO
 
--- 3. Thêm các Đơn đặt phòng mẫu để test (Bao phủ mọi trạng thái)
--- Trạng thái: "Đang ở" -> Khách đang thuê, lễ tân chuẩn bị check-out
-INSERT INTO Orders (roomId, customerUsername, total, status) VALUES 
-('103', 'khachhang', 500000, N'Đang ở');
-
--- Trạng thái: "Đã Check-out" -> Đơn đã hoàn thành, phòng cần dọn
-INSERT INTO Orders (roomId, customerUsername, total, status) VALUES 
-('201', 'khachhang2', 800000, N'Đã Check-out'),
-('302', 'khachhang', 1500000, N'Đã Check-out');
-
--- Trạng thái: "Chờ Check-in" -> Khách vừa đặt phòng, lễ tân chờ đón
-INSERT INTO Orders (roomId, customerUsername, total, status) VALUES 
-('203', 'khachhang2', 800000, N'Chờ Check-in');
+-- 3. Insert Đồ đạc trong phòng và giá đền bù (VND)
+INSERT INTO RoomItem (name, compensation_price) VALUES
+(N'Khăn tắm (Towel)', 150000),
+(N'Cốc thủy tinh (Glass)', 50000),
+(N'Điều khiển TV (TV Remote)', 300000),
+(N'Điều khiển Điều hòa (AC Remote)', 250000),
+(N'Chìa khóa phòng (Room Key)', 100000),
+(N'Bình siêu tốc (Kettle)', 500000),
+(N'Máy sấy tóc (Hair Dryer)', 400000),
+(N'Tivi (TV)', 8000000);
 GO
 
--- =======================================================
--- KIỂM TRA LẠI DỮ LIỆU
--- =======================================================
--- SELECT * FROM Users;
--- SELECT * FROM Rooms;
--- SELECT * FROM Orders;
+-- 4. Vòng lặp T-SQL Insert 54 phòng (6 tầng)
+DECLARE @floor INT = 1;
+DECLARE @roomNumber INT;
+DECLARE @roomId VARCHAR(10);
+DECLARE @catId INT;
+
+WHILE @floor <= 6
+BEGIN
+    SET @roomNumber = 1;
+    WHILE @roomNumber <= 9
+    BEGIN
+        SET @roomId = CAST(@floor AS VARCHAR(1)) + RIGHT('0' + CAST(@roomNumber AS VARCHAR(2)), 2);
+        
+        IF @roomNumber <= 3 SET @catId = 1;
+        ELSE IF @roomNumber <= 6 SET @catId = 2;
+        ELSE SET @catId = 3;
+
+        -- Đặt một vài phòng giả lập trạng thái khác nhau cho chân thực
+        DECLARE @status VARCHAR(20) = 'Available';
+        IF @roomId IN ('101', '203', '302') SET @status = 'Occupied';
+        IF @roomId IN ('201', '405') SET @status = 'Needs Cleaning';
+
+        INSERT INTO Room (id, category_id, floor, status) 
+        VALUES (@roomId, @catId, @floor, @status);
+
+        SET @roomNumber = @roomNumber + 1;
+    END
+    SET @floor = @floor + 1;
+END
+GO

@@ -50,17 +50,28 @@ public class CustomerServlet extends HttpServlet {
 
         HttpSession session = request.getSession();
         User user = (User) session.getAttribute("currentUser");
+        
+        if (user == null || !user.getRole().equals("customer")) {
+            response.sendRedirect("login.jsp");
+            return;
+        }
 
         String action = request.getParameter("action");
         if ("book".equals(action)) {
             String roomId = request.getParameter("roomId");
-            int price = Integer.parseInt(request.getParameter("price"));
+            int total = 0;
+            try {
+                total = Integer.parseInt(request.getParameter("price"));
+            } catch (Exception e) {}
+
+            java.sql.Date defaultDate = new java.sql.Date(System.currentTimeMillis());
 
             RoomDAO roomDAO = new RoomDAO();
             OrderDAO orderDAO = new OrderDAO();
 
             roomDAO.updateRoomStatus(roomId, "Reserved");
-            orderDAO.insertOrder(roomId, user.getUsername(), price, "Chờ Check-in");
+            Order order = new Order(0, roomId, user.getUsername(), total, defaultDate, defaultDate, "Chờ Check-in", "Unpaid");
+            orderDAO.createOrder(order);
         }
 
         response.sendRedirect("customer");

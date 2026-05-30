@@ -1,88 +1,139 @@
-<%@page import="model.User"%>
-<%@page import="java.util.List"%>
-<%@page import="model.Room"%>
 <%@page contentType="text/html" pageEncoding="UTF-8"%>
+<%@taglib uri="http://java.sun.com/jsp/jstl/core" prefix="c"%>
 <!DOCTYPE html>
 <html lang="vi">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>À La Carte - Luxury Hotel</title>
-    <link rel="stylesheet" href="css/style.css">
+    <title>À LA CARTE HẠ LONG BAY</title>
+    <!-- Thêm ?v=<%= System.currentTimeMillis() %> để chống cache CSS của trình duyệt -->
+    <link rel="stylesheet" href="${pageContext.request.contextPath}/css/style.css?v=<%= System.currentTimeMillis() %>">
 </head>
 <body>
-    <%
-        User currentUser = (User) session.getAttribute("currentUser");
-    %>
-    <jsp:include page="components/public_header.jsp" />
 
-    <div class="hero-section animate-fade-in-up">
-        <div class="hero-overlay"></div>
-        <div class="hero-content">
-            <h1 class="hero-title">Trải nghiệm Nghỉ dưỡng Đỉnh cao</h1>
-            <p class="hero-subtitle">Chào mừng đến với À La Carte Hạ Long Bay - Nơi không gian sang trọng giao thoa cùng kỳ quan thiên nhiên thế giới.</p>
-            <a href="#rooms" class="btn btn-primary" style="font-size: 1.1rem; padding: 1rem 2rem;">Khám Phá Ngay</a>
-        </div>
-    </div>
-
-    <div class="container animate-fade-in-up animate-delay-1" id="rooms" style="padding-top: 5rem; padding-bottom: 5rem;">
-        <div style="text-align: center; margin-bottom: 4rem;">
-            <h2 style="font-size: 2.5rem; color: var(--text-main);">Hạng Phòng Tuyệt Đỉnh</h2>
-            <p style="color: var(--text-muted);">Tận hưởng sự thư giãn tuyệt đối với các phòng nghỉ được thiết kế hiện đại và đầy đủ tiện nghi.</p>
-        </div>
-
-        <div class="grid grid-cols-3">
-            <%
-                List<Room> rooms = (List<Room>) request.getAttribute("rooms");
-                if (rooms != null) {
-                    for (Room r : rooms) {
-                        if (r.getStatus().equals("Available")) {
-                            // Assign image based on room type
-                            String imgPath = "img/room_standard.png";
-                            if(r.getType().contains("Deluxe")) imgPath = "img/room_deluxe.png";
-                            if(r.getType().contains("Suite")) imgPath = "img/room_suite.png";
-            %>
-            <div class="card glass-panel animate-fade-in-up animate-delay-2" style="display:flex; flex-direction:column; padding-bottom: 1.5rem;">
-                <img src="<%= imgPath %>" alt="Room Image" class="room-img">
-                
-                <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom: 1rem;">
-                    <h3 style="margin:0; color:var(--text-main);">Phòng <%= r.getId() %></h3>
-                    <span class="badge badge-primary"><%= r.getType() %></span>
-                </div>
-                
-                <p style="color:var(--text-muted); font-size:0.95rem; margin-bottom: 1.5rem; min-height: 40px;">
-                    <%= r.getFeatures() %>
-                </p>
-                
-                <div style="font-size: 1.5rem; font-weight: 700; color: #10b981; margin-bottom: 1.5rem;">
-                    <%= String.format("%,d", r.getPrice()) %> đ <span style="font-size: 0.9rem; color: var(--text-muted); font-weight: 400;">/ đêm</span>
-                </div>
-                
-                <% if (currentUser == null) { %>
-                    <a href="login.jsp" class="btn btn-primary" style="margin-top:auto; text-decoration: none;">Đăng nhập để Đặt phòng</a>
-                <% } else if (currentUser.getRole().equals("customer")) { %>
-                    <form action="customer" method="POST" style="margin-top:auto;">
-                        <input type="hidden" name="action" value="book">
-                        <input type="hidden" name="roomId" value="<%= r.getId() %>">
-                        <input type="hidden" name="price" value="<%= r.getPrice() %>">
-                        <button type="submit" class="btn btn-primary" style="width: 100%;" onclick="return confirm('Xác nhận đặt phòng <%= r.getId() %>?');">
-                            Đặt phòng ngay
-                        </button>
-                    </form>
-                <% } else { %>
-                    <button class="btn btn-primary" style="margin-top:auto; background: var(--border); cursor: not-allowed;" disabled>
-                        Chỉ Khách hàng mới được Đặt
-                    </button>
-                <% } %>
+    <!-- Navbar Overlay -->
+    <nav class="navbar">
+        <a href="home" class="logo">À LA CARTE</a>
+        
+        <div class="nav-right">
+            <div class="nav-links">
+                <a href="#rooms">Phòng Nghỉ</a>
+                <a href="#services">Dịch Vụ</a>
             </div>
-            <%
-                        }
-                    }
-                }
-            %>
+            
+            <div class="auth-buttons">
+                <c:choose>
+                    <c:when test="${not empty sessionScope.currentUser}">
+                        <c:choose>
+                            <c:when test="${sessionScope.currentUser.role == 'customer'}"><a href="customer" class="btn-outline">Quản Lý Đơn</a></c:when>
+                            <c:when test="${sessionScope.currentUser.role == 'manager'}"><a href="manager" class="btn-outline">Trang Quản Lý</a></c:when>
+                            <c:when test="${sessionScope.currentUser.role == 'receptionist'}"><a href="receptionist" class="btn-outline">Quầy Lễ Tân</a></c:when>
+                            <c:otherwise><a href="#" class="btn-outline">Xin chào, ${sessionScope.currentUser.name}</a></c:otherwise>
+                        </c:choose>
+                        <!-- Nút Logout thay vì Đăng ký -->
+                        <a href="logout" class="btn-solid">Đăng xuất</a>
+                    </c:when>
+                    <c:otherwise>
+                        <a href="login.jsp" class="btn-outline">Đăng nhập</a>
+                        <a href="register.jsp" class="btn-solid">Đăng ký</a>
+                    </c:otherwise>
+                </c:choose>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Hero Section -->
+    <header class="hero">
+        <h1>Trải nghiệm Nghỉ dưỡng<br>Đỉnh cao</h1>
+        <p>Chào mừng đến với À La Carte Hạ Long Bay - Nơi không gian sang trọng giao thoa cùng kỳ quan thiên nhiên thế giới.</p>
+        <button class="btn-explore" onclick="document.getElementById('rooms').scrollIntoView({ behavior: 'smooth' });">Khám Phá Ngay</button>
+    </header>
+
+    <!-- Rooms Section -->
+    <section class="section" id="rooms">
+        <h2 class="section-title">Hệ Thống Phòng Nghỉ</h2>
+        <div class="room-grid">
+            <c:forEach items="${categories}" var="cat">
+                <div class="room-card">
+                    <c:choose>
+                        <c:when test="${cat.name == 'Standard'}">
+                            <div class="room-img" style="background-image: url('https://images.unsplash.com/photo-1631049307264-da0ec9d70304?q=80&w=600');"></div>
+                        </c:when>
+                        <c:when test="${cat.name == 'Deluxe'}">
+                            <div class="room-img" style="background-image: url('https://images.unsplash.com/photo-1590490360182-c33d57733427?q=80&w=600');"></div>
+                        </c:when>
+                        <c:otherwise>
+                            <div class="room-img" style="background-image: url('https://images.unsplash.com/photo-1618773928121-c32242e63f39?q=80&w=600');"></div>
+                        </c:otherwise>
+                    </c:choose>
+                    <div class="room-info">
+                        <h3>Phòng ${cat.name}</h3>
+                        <div class="price">${String.format("%,d", cat.price)} VNĐ / Đêm</div>
+                        <p style="color: #64748b; font-size: 0.9rem; margin-bottom: 20px;">Sức chứa tối đa ${cat.capacity} người.<br>${cat.description}</p>
+                        <button class="btn-select" onclick="openModal(${cat.id}, 'Phòng ${cat.name}')">Kiểm tra phòng trống</button>
+                    </div>
+                </div>
+            </c:forEach>
+        </div>
+    </section>
+
+
+
+    <!-- Booking Modal -->
+    <div id="bookingModal" class="modal">
+        <div class="modal-content">
+            <span class="close" onclick="closeModal()">&times;</span>
+            <h3>Tra cứu phòng</h3>
+            <p style="margin-bottom: 20px;">Đang chọn: <strong id="modalCatName" style="color: #6b46c1;"></strong></p>
+            
+            <form action="home" method="POST">
+                <input type="hidden" id="modalCatId" name="categoryId" value="">
+                <div class="form-group">
+                    <label>Ngày Check-in (Từ 14:00)</label>
+                    <input type="date" name="checkIn" required>
+                </div>
+                <div class="form-group">
+                    <label>Ngày Check-out (Đến 12:00)</label>
+                    <input type="date" name="checkOut" required>
+                </div>
+                <button type="submit" class="btn-submit">TRA CỨU</button>
+            </form>
         </div>
     </div>
-    
-    <jsp:include page="components/footer.jsp" />
+
+    <!-- Footer -->
+    <footer class="footer">
+        <div class="footer-content">
+            <div class="footer-brand" style="text-align: left;">
+                <div class="footer-logo">À LA CARTE<span>.</span></div>
+                <p style="max-width: 300px; line-height: 1.8;">Trải nghiệm không gian nghỉ dưỡng đỉnh cao nơi kỳ quan thiên nhiên thế giới.</p>
+            </div>
+            <div class="footer-contact" style="text-align: right;">
+                <p><strong>Hotline:</strong> 0904.536.822</p>
+                <p><strong>Email:</strong> contact@alacarte.com.vn</p>
+                <p><strong>Địa chỉ:</strong> Hạ Long Marina, Bãi Cháy, Quảng Ninh</p>
+            </div>
+        </div>
+        <div class="footer-bottom">
+            &copy; 2026 À La Carte Ha Long Bay. All rights reserved.
+        </div>
+    </footer>
+
+    <script>
+        var modal = document.getElementById("bookingModal");
+        function openModal(id, name) {
+            document.getElementById("modalCatId").value = id;
+            document.getElementById("modalCatName").innerText = name;
+            modal.style.display = "block";
+        }
+        function closeModal() {
+            modal.style.display = "none";
+        }
+        window.onclick = function(event) {
+            if (event.target == modal) {
+                modal.style.display = "none";
+            }
+        }
+    </script>
 </body>
 </html>

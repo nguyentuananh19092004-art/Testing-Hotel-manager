@@ -64,7 +64,9 @@ CREATE TABLE Orders (
     check_in_date DATE,
     check_out_date DATE,
     status NVARCHAR(50), -- Chờ Check-in, Đang ở, Đã Check-out
-    payment_status VARCHAR(20) DEFAULT 'Unpaid'
+    payment_status VARCHAR(20) DEFAULT 'Unpaid',
+    rating INT DEFAULT 0,
+    note NVARCHAR(500)
 );
 GO
 
@@ -214,10 +216,7 @@ BEGIN
         ELSE IF @roomNumber <= 6 SET @catId = 2;
         ELSE SET @catId = 3;
 
-        -- Đặt một vài phòng giả lập trạng thái khác nhau cho chân thực
         DECLARE @status VARCHAR(20) = 'Available';
-        IF @roomId IN ('101', '203', '302') SET @status = 'Occupied';
-        IF @roomId IN ('201', '405') SET @status = 'Needs Cleaning';
 
         INSERT INTO Room (id, category_id, floor, status) 
         VALUES (@roomId, @catId, @floor, @status);

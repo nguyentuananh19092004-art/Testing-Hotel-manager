@@ -44,6 +44,16 @@ public class HomeServlet extends HttpServlet {
             Date checkOut = Date.valueOf(checkOutStr);
             int categoryId = Integer.parseInt(categoryIdStr);
             
+            RoomCategory selectedCatObj = null;
+            List<RoomCategory> allCats = categoryDAO.getAllCategories();
+            request.setAttribute("categories", allCats);
+            for (RoomCategory c : allCats) {
+                if (c.getId() == categoryId) {
+                    selectedCatObj = c;
+                    break;
+                }
+            }
+            
             RoomDAO roomDAO = new RoomDAO();
             List<Room> availableRooms = roomDAO.getAvailableRooms(categoryId, checkIn, checkOut);
             
@@ -51,6 +61,7 @@ public class HomeServlet extends HttpServlet {
             request.setAttribute("selectedCheckIn", checkInStr);
             request.setAttribute("selectedCheckOut", checkOutStr);
             request.setAttribute("selectedCategory", categoryId);
+            request.setAttribute("selectedCategoryObj", selectedCatObj);
             
         } catch (Exception e) {
             request.setAttribute("error", "Vui lòng chọn ngày hợp lệ!");

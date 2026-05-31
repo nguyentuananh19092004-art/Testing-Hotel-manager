@@ -11,6 +11,8 @@ public class Order {
     private Date checkOutDate;
     private String status;
     private String paymentStatus;
+    private int rating;
+    private String note;
 
     public Order() {
     }
@@ -24,6 +26,21 @@ public class Order {
         this.checkOutDate = checkOutDate;
         this.status = status;
         this.paymentStatus = paymentStatus;
+        this.rating = 0;
+        this.note = "";
+    }
+
+    public Order(int id, String roomId, String customerUsername, int total, Date checkInDate, Date checkOutDate, String status, String paymentStatus, int rating, String note) {
+        this.id = id;
+        this.roomId = roomId;
+        this.customerUsername = customerUsername;
+        this.total = total;
+        this.checkInDate = checkInDate;
+        this.checkOutDate = checkOutDate;
+        this.status = status;
+        this.paymentStatus = paymentStatus;
+        this.rating = rating;
+        this.note = note;
     }
 
     public int getId() { return id; }
@@ -42,4 +59,8 @@ public class Order {
     public void setStatus(String status) { this.status = status; }
     public String getPaymentStatus() { return paymentStatus; }
     public void setPaymentStatus(String paymentStatus) { this.paymentStatus = paymentStatus; }
+    public int getRating() { return rating; }
+    public void setRating(int rating) { this.rating = rating; }
+    public String getNote() { return note; }
+    public void setNote(String note) { this.note = note; }
 }

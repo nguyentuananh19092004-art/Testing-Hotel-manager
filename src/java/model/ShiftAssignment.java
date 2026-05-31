@@ -58,6 +58,16 @@ public class ShiftAssignment {
         return assignDate;
     }
 
+    public Date getEndAssignDate() {
+        if (shift != null && shift.getStartTime() != null && shift.getEndTime() != null) {
+            if (shift.getStartTime().after(shift.getEndTime())) {
+                long oneDay = 24 * 60 * 60 * 1000L;
+                return new Date(assignDate.getTime() + oneDay);
+            }
+        }
+        return assignDate;
+    }
+
     public void setAssignDate(Date assignDate) {
         this.assignDate = assignDate;
     }

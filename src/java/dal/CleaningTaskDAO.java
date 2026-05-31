@@ -46,6 +46,32 @@ public class CleaningTaskDAO extends DBContext {
         return list;
     }
 
+    public List<CleaningTask> getPendingTasksByFloor(int floor) {
+        List<CleaningTask> list = new ArrayList<>();
+        String sql = "SELECT ct.* FROM CleaningTask ct " +
+                     "JOIN Room r ON ct.room_id = r.id " +
+                     "WHERE r.floor = ? AND ct.status != 'Completed' " +
+                     "ORDER BY ct.created_at ASC";
+        try {
+            PreparedStatement st = connection.prepareStatement(sql);
+            st.setInt(1, floor);
+            ResultSet rs = st.executeQuery();
+            while (rs.next()) {
+                list.add(new CleaningTask(
+                        rs.getInt("id"),
+                        rs.getString("room_id"),
+                        rs.getString("assigned_to"),
+                        rs.getString("status"),
+                        rs.getTimestamp("created_at"),
+                        rs.getTimestamp("completed_at")
+                ));
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+        return list;
+    }
+
     public boolean updateTaskStatus(int taskId, String status) {
         String sql = "UPDATE CleaningTask SET status = ?, completed_at = CASE WHEN ? = 'Completed' THEN GETDATE() ELSE completed_at END WHERE id = ?";
         try {

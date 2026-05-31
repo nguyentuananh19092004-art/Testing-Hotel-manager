@@ -35,6 +35,12 @@ public class ManagerServlet extends HttpServlet {
         request.setAttribute("orders", orderDAO.getAllOrders());
         request.setAttribute("users", userDAO.getAllUsers());
 
+        String action = request.getParameter("action");
+        if ("reviews".equals(action)) {
+            request.getRequestDispatcher("pages/review_management.jsp").forward(request, response);
+            return;
+        }
+
         request.getRequestDispatcher("pages/manager.jsp").forward(request, response);
     }
 }

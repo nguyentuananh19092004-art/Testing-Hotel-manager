@@ -59,7 +59,7 @@ public class OrderDAO extends DBContext {
             st.setString(1, username);
             ResultSet rs = st.executeQuery();
             while (rs.next()) {
-                list.add(new Order(rs.getInt("id"), rs.getString("room_id"), rs.getString("customer_username"), rs.getInt("total"), rs.getDate("check_in_date"), rs.getDate("check_out_date"), rs.getString("status"), rs.getString("payment_status")));
+                list.add(new Order(rs.getInt("id"), rs.getString("room_id"), rs.getString("customer_username"), rs.getInt("total"), rs.getDate("check_in_date"), rs.getDate("check_out_date"), rs.getString("status"), rs.getString("payment_status"), rs.getInt("rating"), rs.getString("note")));
             }
         } catch (SQLException e) {
             e.printStackTrace();
@@ -74,11 +74,24 @@ public class OrderDAO extends DBContext {
             PreparedStatement st = connection.prepareStatement(sql);
             ResultSet rs = st.executeQuery();
             while (rs.next()) {
-                list.add(new Order(rs.getInt("id"), rs.getString("room_id"), rs.getString("customer_username"), rs.getInt("total"), rs.getDate("check_in_date"), rs.getDate("check_out_date"), rs.getString("status"), rs.getString("payment_status")));
+                list.add(new Order(rs.getInt("id"), rs.getString("room_id"), rs.getString("customer_username"), rs.getInt("total"), rs.getDate("check_in_date"), rs.getDate("check_out_date"), rs.getString("status"), rs.getString("payment_status"), rs.getInt("rating"), rs.getString("note")));
             }
         } catch (SQLException e) {
             e.printStackTrace();
         }
         return list;
+    }
+
+    public void updateOrderReview(int orderId, int rating, String note) {
+        String sql = "UPDATE Orders SET rating = ?, note = ? WHERE id = ?";
+        try {
+            PreparedStatement st = connection.prepareStatement(sql);
+            st.setInt(1, rating);
+            st.setString(2, note);
+            st.setInt(3, orderId);
+            st.executeUpdate();
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
     }
 }

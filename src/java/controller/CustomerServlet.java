@@ -72,6 +72,12 @@ public class CustomerServlet extends HttpServlet {
             roomDAO.updateRoomStatus(roomId, "Reserved");
             Order order = new Order(0, roomId, user.getUsername(), total, defaultDate, defaultDate, "Chờ Check-in", "Unpaid");
             orderDAO.createOrder(order);
+        } else if ("review".equals(action)) {
+            int orderId = Integer.parseInt(request.getParameter("orderId"));
+            int rating = Integer.parseInt(request.getParameter("rating"));
+            String note = request.getParameter("note");
+            OrderDAO orderDAO = new OrderDAO();
+            orderDAO.updateOrderReview(orderId, rating, note);
         }
 
         response.sendRedirect("customer");

@@ -123,4 +123,37 @@ public class ShiftAssignmentDAO extends DBContext {
         }
         return list;
     }
+
+    public ShiftAssignment getCurrentShift(String username) {
+        String sql = "SELECT sa.* FROM ShiftAssignment sa " +
+                     "JOIN Shift s ON sa.shift_id = s.id " +
+                     "WHERE sa.username = ? " +
+                     "AND (" +
+                     "   (s.start_time <= s.end_time AND CAST(GETDATE() AS DATE) = sa.assign_date " +
+                     "    AND CAST(GETDATE() AS TIME) >= s.start_time AND CAST(GETDATE() AS TIME) <= s.end_time) " +
+                     "   OR " +
+                     "   (s.start_time > s.end_time AND (" +
+                     "       (CAST(GETDATE() AS DATE) = sa.assign_date AND CAST(GETDATE() AS TIME) >= s.start_time) " +
+                     "       OR " +
+                     "       (CAST(GETDATE() AS DATE) = DATEADD(day, 1, sa.assign_date) AND CAST(GETDATE() AS TIME) <= s.end_time) " +
+                     "   )) " +
+                     ")";
+        try {
+            PreparedStatement st = connection.prepareStatement(sql);
+            st.setString(1, username);
+            ResultSet rs = st.executeQuery();
+            if (rs.next()) {
+                return new ShiftAssignment(
+                        rs.getInt("id"),
+                        rs.getString("username"),
+                        rs.getInt("shift_id"),
+                        rs.getInt("floor"),
+                        rs.getDate("assign_date")
+                );
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+        return null;
+    }
 }

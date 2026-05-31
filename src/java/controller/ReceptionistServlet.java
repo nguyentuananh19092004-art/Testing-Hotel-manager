@@ -31,9 +31,18 @@ public class ReceptionistServlet extends HttpServlet {
 
         RoomDAO roomDAO = new RoomDAO();
         OrderDAO orderDAO = new OrderDAO();
+        dal.ShiftAssignmentDAO saDAO = new dal.ShiftAssignmentDAO();
 
-        request.setAttribute("rooms", roomDAO.getAllRooms());
-        request.setAttribute("orders", orderDAO.getAllOrders());
+        model.ShiftAssignment currentShift = saDAO.getCurrentShift(user.getUsername());
+
+        if (currentShift != null) {
+            request.setAttribute("hasShift", true);
+            request.setAttribute("rooms", roomDAO.getAllRooms());
+            request.setAttribute("orders", orderDAO.getAllOrders());
+        } else {
+            request.setAttribute("hasShift", false);
+            request.setAttribute("message", "Bạn không có ca trực vào thời điểm hiện tại. Không thể can thiệp dữ liệu.");
+        }
 
         request.getRequestDispatcher("pages/receptionist.jsp").forward(request, response);
     }
@@ -82,6 +91,6 @@ public class ReceptionistServlet extends HttpServlet {
             }
         }
         
-        response.sendRedirect("receptionist");
+        response.sendRedirect(request.getContextPath() + "/receptionist");
     }
 }

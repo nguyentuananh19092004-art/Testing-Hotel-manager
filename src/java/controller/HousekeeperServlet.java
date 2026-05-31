@@ -29,11 +29,22 @@ public class HousekeeperServlet extends HttpServlet {
         }
 
         RoomDAO roomDAO = new RoomDAO();
+        dal.ShiftAssignmentDAO saDAO = new dal.ShiftAssignmentDAO();
         CleaningTaskDAO ctDAO = new CleaningTaskDAO();
         
-        request.setAttribute("rooms", roomDAO.getAllRooms());
-        List<CleaningTask> tasks = ctDAO.getTasksByHousekeeper(user.getUsername());
-        request.setAttribute("tasks", tasks);
+        model.ShiftAssignment currentShift = saDAO.getCurrentShift(user.getUsername());
+        
+        if (currentShift != null) {
+            request.setAttribute("hasShift", true);
+            request.setAttribute("shiftFloor", currentShift.getFloor());
+            request.setAttribute("rooms", roomDAO.getAllRooms());
+            // Lấy tất cả các task chưa hoàn thành trên tầng được phân công, kể cả task chưa có người nhận
+            List<CleaningTask> tasks = ctDAO.getPendingTasksByFloor(currentShift.getFloor());
+            request.setAttribute("tasks", tasks);
+        } else {
+            request.setAttribute("hasShift", false);
+            request.setAttribute("message", "Bạn không có ca trực dọn phòng vào thời điểm hiện tại.");
+        }
 
         request.getRequestDispatcher("pages/housekeeper.jsp").forward(request, response);
     }
@@ -56,6 +67,6 @@ public class HousekeeperServlet extends HttpServlet {
             }
         }
         
-        response.sendRedirect("housekeeper");
+        response.sendRedirect(request.getContextPath() + "/housekeeper");
     }
 }
